@@ -1,0 +1,167 @@
+# -------------------------
+# OS / System files
+# -------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# -------------------------
+# Node.js / npm / yarn / pnpm
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+.pnpm-store/
+
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+.eggs/
+*.egg
+*.manifest
+*.spec
+*.coverage
+.coverage.*
+.cache/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.pyre/
+
+# -------------------------
+# Java / JVM
+# -------------------------
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+*.ipr
+*.iws
+target/
+out/
+
+# -------------------------
+# Go
+# -------------------------
+bin/
+*.exe
+*.test
+*.out
+
+# -------------------------
+# Rust
+# -------------------------
+target/
+Cargo.lock
+
+# -------------------------
+# C / C++ / Obj-C
+# -------------------------
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+*.app
+
+# -------------------------
+# Databases
+# -------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+*.log
+
+# -------------------------
+# Logs / Temp
+# -------------------------
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+*.old
+*.orig
+
+# -------------------------
+# VS Code
+# -------------------------
+.vscode/
+.history/
+.code-workspace
+
+# -------------------------
+# JetBrains IDEs (IntelliJ, PyCharm, WebStorm, etc.)
+# -------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# -------------------------
+# Cloud / AI tools
+# -------------------------
+# Claude / Anthropic
+claude.json
+claude.config
+claude-cache/
+claude-logs/
+
+# Copilot / AI configs
+copilot.json
+copilot.config
+copilot-cache/
+copilot-logs/
+
+# -------------------------
+# Miscellaneous
+# -------------------------
+.env
+.env.*
+*.secret
+*.key
+*.pem
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# -------------------------
+# Coverage / Reports
+# -------------------------
+coverage/
+lcov-report/
+*.lcov
+*.gcov
+*.gcda
+*.gcno
+
+# -------------------------
+# Build / Dist
+# -------------------------
+dist/
+build/
+tmp/
+.cache/
