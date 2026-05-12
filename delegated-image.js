@@ -14,6 +14,7 @@ const SCOPES = ["Chat.Create", "ChatMessage.Send"];
 
 const CACHE_PATH = path.join(__dirname, ".msal-cache.json");
 
+const IMAGE_PATH = path.join(__dirname, "Numbers.png");
 
 const msalConfig = {
   auth: {
@@ -89,13 +90,24 @@ async function createOneOnOneChat(client, senderUserId, targetUserUpn) {
   return chat.id;
 }
 
-async function sendMessageToChat(client, chatId, content) {
+async function sendMessageToChat(client, chatId, content, imagePath) {
   const chatMessage = {
     body: {
       contentType: "html",
       content,
     },
   };
+
+  if (imagePath && fs.existsSync(imagePath)) {
+    const contentBytes = fs.readFileSync(imagePath).toString("base64");
+    chatMessage.hostedContents = [
+      {
+        "@microsoft.graph.temporaryId": "1",
+        contentBytes,
+        contentType: "image/png",
+      },
+    ];
+  }
 
   await client.api(`/chats/${chatId}/messages`).post(chatMessage);
 }
@@ -109,7 +121,8 @@ async function sendMessageToChat(client, chatId, content) {
     await sendMessageToChat(
       client,
       chatId,
-      "Hello from delegated flow, Welcome to the other side Frax"
+      'Hello from delegated flow<br/><img src="../hostedContents/1/$value" alt="Number" />',
+      IMAGE_PATH
     );
 
     console.log("Delegated message sent successfully.");
