@@ -1,5 +1,7 @@
 const { PublicClientApplication } = require("@azure/msal-node");
 const { Client } = require("@microsoft/microsoft-graph-client");
+const fs = require("fs");
+const path = require("path");
 
 // Configure these with your app/user details.
 const CLIENT_ID = process.env.CLIENT_ID || "5935a6c7-dea3-4ff2-adf0-fb90e27e2f3c";
@@ -11,6 +13,8 @@ const TARGET_USER_UPN =
 // Delegated scopes (user context).
 const SCOPES = ["Chat.Create", "ChatMessage.Send"];
 
+const CACHE_PATH = path.join(__dirname, ".msal-cache.json");
+
 const msalConfig = {
   auth: {
     clientId: CLIENT_ID,
@@ -20,7 +24,33 @@ const msalConfig = {
 
 const pca = new PublicClientApplication(msalConfig);
 
+function loadCache() {
+  if (fs.existsSync(CACHE_PATH)) {
+    pca.getTokenCache().deserialize(fs.readFileSync(CACHE_PATH, "utf-8"));
+  }
+}
+
+function saveCache() {
+  fs.writeFileSync(CACHE_PATH, pca.getTokenCache().serialize());
+}
+
 async function getDelegatedToken() {
+  loadCache();
+
+  const accounts = await pca.getTokenCache().getAllAccounts();
+  if (accounts.length > 0) {
+    try {
+      const silentResult = await pca.acquireTokenSilent({
+        account: accounts[0],
+        scopes: SCOPES,
+      });
+      saveCache();
+      return silentResult.accessToken;
+    } catch (_) {
+      // Silent refresh failed — fall through to device code.
+    }
+  }
+
   const result = await pca.acquireTokenByDeviceCode({
     scopes: SCOPES,
     deviceCodeCallback: (response) => {
@@ -28,6 +58,7 @@ async function getDelegatedToken() {
     },
   });
 
+  saveCache();
   return result.accessToken;
 }
 
@@ -78,7 +109,7 @@ async function sendMessageToChat(client, chatId, content) {
     await sendMessageToChat(
       client,
       chatId,
-      "<b>Hello from delegated flow</b>"
+      "Hello from delegated flow, Welcome to the other side Frax"
     );
 
     console.log("Delegated message sent successfully.");

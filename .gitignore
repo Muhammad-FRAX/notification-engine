@@ -165,3 +165,8 @@ dist/
 build/
 tmp/
 .cache/
+
+# -------------------------
+# MSAL token cache
+# -------------------------
+.msal-cache.json
