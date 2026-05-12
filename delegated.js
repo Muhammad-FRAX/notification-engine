@@ -4,8 +4,9 @@ const { Client } = require("@microsoft/microsoft-graph-client");
 // Configure these with your app/user details.
 const CLIENT_ID = process.env.CLIENT_ID || "5935a6c7-dea3-4ff2-adf0-fb90e27e2f3c";
 const TENANT_ID = process.env.TENANT_ID || "a7853600-5c09-49fd-adca-53fa929e9645";
+const SENDER_USER_ID = "b2fe3440-be1b-49c5-a6b2-ac527efeca71"; // biadmin@sd.zain.com
 const TARGET_USER_UPN =
-  process.env.TARGET_USER_UPN || "mohamed.alsiddig@ms.sd.zain.com";
+  process.env.TARGET_USER_UPN || "m.alsiddig@sd.zain.com";
 
 // Delegated scopes (user context).
 const SCOPES = ["Chat.Create", "ChatMessage.Send"];
@@ -36,14 +37,18 @@ function createGraphClient(token) {
   });
 }
 
-async function createOneOnOneChat(client, targetUserUpn) {
+async function createOneOnOneChat(client, senderUserId, targetUserUpn) {
   const body = {
     chatType: "oneOnOne",
     members: [
       {
         "@odata.type": "#microsoft.graph.aadUserConversationMember",
         roles: ["owner"],
-        // In delegated flow, the signed-in user is implied.
+        "user@odata.bind": `https://graph.microsoft.com/v1.0/users('${senderUserId}')`,
+      },
+      {
+        "@odata.type": "#microsoft.graph.aadUserConversationMember",
+        roles: ["owner"],
         "user@odata.bind": `https://graph.microsoft.com/v1.0/users('${targetUserUpn}')`,
       },
     ],
@@ -68,7 +73,7 @@ async function sendMessageToChat(client, chatId, content) {
   try {
     const token = await getDelegatedToken();
     const client = createGraphClient(token);
-    const chatId = await createOneOnOneChat(client, TARGET_USER_UPN);
+    const chatId = await createOneOnOneChat(client, SENDER_USER_ID, TARGET_USER_UPN);
 
     await sendMessageToChat(
       client,
