@@ -1,99 +1,73 @@
-// -------------------------------------------------------------------------------------------------
-// ---------------------- [Imports] ----------------------------------------------------------------
-import express from "express";
-import helmet from "helmet";
-import dotenv from "dotenv";
-import cors from "cors";
-import rateLimit from "express-rate-limit";
-import path from "path";
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 
-// -------------------------------------------------------------------------------------------------
-// ---------------------- [Configuration] ----------------------------------------------------------
-dotenv.config();
+import config from './config.js';
+import { requestId } from './middleware/requestId.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import healthRouter from './routes/health.routes.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// -------------------------------------------------------------------------------------------------
-// ---------------------- [Security Middleware] ----------------------------------------------------
-app.use(cors());
+// Security headers
 app.use(helmet());
+app.use(cors());
 
-// Global Rate Limiter
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limiting each IP to 100 requests per 15 minutes per Window
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    status: 429,
-    error:
-      "Too many requests from this source, please try again after 15 minutes",
-  },
-});
+// Request identification — attached before any logging or routing
+app.use(requestId);
 
-// Auth Rate Limiter
-const authLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5, // Limiting each IP to 5 requests per window
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    status: 429,
-    error:
-      "Too many login attempts from this source, please try again after 1 minute",
-  },
-});
-
-// Apply Limiters
-app.use(globalLimiter);
-app.use("/api/auth", authLimiter);
-
-// -------------------------------------------------------------------------------------------------
-// ---------------------- [Core Middleware] --------------------------------------------------------
-
-// Request Logging
+// Request logging
 app.use((req, res, next) => {
-  console.log(` ${req.method} ${req.path} - ${new Date().toISOString()}`);
+  console.log(`[${req.id}] ${req.method} ${req.path}`);
   next();
 });
 
-// Body Parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parsing — 1 gb cap so large image attachments pass through
+app.use(express.json({ limit: '1gb' }));
+app.use(express.urlencoded({ extended: true, limit: '1gb' }));
 
-// -------------------------------------------------------------------------------------------------
-// ---------------------- [Routes] -----------------------------------------------------------------
-
-app.get("/", (req, res) => {
-  res.send("Frax is Here!");
+// Global rate limiter — applied to all routes
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'rate_limited', message: 'Too many requests; try again later.' },
 });
+app.use(globalLimiter);
 
-// Serving frontend files (Production only)
-if (process.env.NODE_ENV && process.env.NODE_ENV === "production") {
-  const FrontendEntryPointPath = path.join(__dirname, "..", "dist");
-  app.use(express.static(FrontendEntryPointPath));
+// Auth rate limiter — tighter window for the admin login route
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'rate_limited', message: 'Too many login attempts; try again in a minute.' },
+});
+app.use('/api/admin/auth', authLimiter);
 
-  // Handle all other routes by serving the index.html file
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(FrontendEntryPointPath, "index.html"));
+// Routes
+app.use(healthRouter);
+
+// Serve compiled frontend in production
+if (config.nodeEnv === 'production') {
+  const distPath = join(__dirname, '..', '..', 'frontend', 'dist');
+  app.use(express.static(distPath));
+  app.get('*', (req, res) => {
+    res.sendFile(join(distPath, 'index.html'));
   });
 }
 
-// -------------------------------------------------------------------------------------------------
-// ---------------------- [Error Handling] ---------------------------------------------------------
-app.use((err, req, res, next) => {
-  console.error("Error:", err.stack);
-  res.status(500).json({
-    error: "Something went wrong!",
-    message:
-      process.env.NODE_ENV === "development"
-        ? err.message
-        : "Internal server error",
-  });
+// Centralised error handler — must be last
+app.use(errorHandler);
+
+app.listen(config.port, () => {
+  console.log(`[server] Notification Engine listening on port ${config.port} (${config.nodeEnv})`);
 });
 
-// -------------------------------------------------------------------------------------------------
-// ---------------------- [Server Start] -----------------------------------------------------------
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+export default app;

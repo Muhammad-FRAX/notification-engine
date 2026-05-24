@@ -1,23 +1,35 @@
 {
-  "name": "app-backend",
+  "name": "notification-engine-backend",
   "version": "1.0.0",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
-  "author": "mohamed ali",
+  "author": "Mohamed Ali",
   "license": "ISC",
-  "description": "General Node js Express Database backend structure",
-  "devDependencies": {
-    "nodemon": "^3.1.11"
-  },
+  "description": "Notification Engine backend — Express 5, Postgres, Microsoft Graph",
   "dependencies": {
+    "@azure/msal-node": "^2.16.2",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "argon2": "^0.43.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "helmet": "^8.1.0"
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "node-pg-migrate": "^7.9.1",
+    "pg": "^8.13.3",
+    "ulid": "^2.3.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "vitest": "^3.2.3"
   }
 }
