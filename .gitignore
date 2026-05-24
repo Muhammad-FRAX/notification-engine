@@ -158,6 +158,7 @@ lcov-report/
 *.gcda
 *.gcno
 
+
 # -------------------------
 # Build / Dist
 # -------------------------
@@ -165,6 +166,7 @@ dist/
 build/
 tmp/
 .cache/
+
 
 # -------------------------
 # MSAL token cache
