@@ -17,7 +17,7 @@ yarn-error.log*
 pnpm-debug.log*
 package-lock.json
 .pnpm-store/
-
+.msal-cache.json
 # -------------------------
 # Python
 # -------------------------
