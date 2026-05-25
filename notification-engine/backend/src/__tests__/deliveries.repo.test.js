@@ -18,6 +18,7 @@ import {
   markSent,
   markFailed,
   markRetrying,
+  expireMaxAttempts,
   resetForRetry,
 } from '../repositories/deliveries.repo.js';
 
@@ -169,7 +170,7 @@ describe('deliveries.repo', () => {
   });
 
   describe('markRetrying', () => {
-    it('increments attempts and sets status to retrying', async () => {
+    it('increments attempts, sets status to retrying, and stamps last_attempted_at', async () => {
       const row = { id: 'dlv_1', status: 'retrying', attempts: 2 };
       pool.query.mockResolvedValue({ rows: [row] });
       const result = await markRetrying('dlv_1');
@@ -177,11 +178,28 @@ describe('deliveries.repo', () => {
       expect(pool.query).toHaveBeenCalledWith(expect.any(String), ['dlv_1']);
       const [sql] = pool.query.mock.calls[0];
       expect(sql).toContain('attempts + 1');
+      expect(sql).toContain('last_attempted_at');
     });
 
     it('propagates DB error', async () => {
       pool.query.mockRejectedValue(new Error('DB error'));
       await expect(markRetrying('dlv_1')).rejects.toThrow('DB error');
+    });
+  });
+
+  describe('expireMaxAttempts', () => {
+    it('marks retrying rows at or above maxAttempts as failed', async () => {
+      pool.query.mockResolvedValue({ rows: [] });
+      await expireMaxAttempts(5);
+      expect(pool.query).toHaveBeenCalledWith(expect.any(String), [5]);
+      const [sql] = pool.query.mock.calls[0];
+      expect(sql).toContain("status = 'failed'");
+      expect(sql).toContain('attempts >= $1');
+    });
+
+    it('propagates DB error', async () => {
+      pool.query.mockRejectedValue(new Error('DB error'));
+      await expect(expireMaxAttempts(5)).rejects.toThrow('DB error');
     });
   });
 

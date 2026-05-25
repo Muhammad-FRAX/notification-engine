@@ -10,6 +10,7 @@ import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import healthRouter from './routes/health.routes.js';
 import { initProxyAccount } from './integrations/msal.service.js';
+import { start as startRetryWorker } from './services/retry.worker.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -70,6 +71,7 @@ app.use(errorHandler);
 app.listen(config.port, async () => {
   console.log(`[server] Notification Engine listening on port ${config.port} (${config.nodeEnv})`);
   await initProxyAccount();
+  startRetryWorker();
 });
 
 export default app;
