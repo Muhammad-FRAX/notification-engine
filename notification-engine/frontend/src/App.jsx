@@ -1,14 +1,19 @@
-import { useState, useEffect } from "react";
-import "./App.css";
-import Home from "./pages/Home.jsx";
+import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider } from './components/ThemeProvider'
+import { ToastProvider } from './components/ui/toast'
+import { TooltipProvider } from './components/ui/tooltip'
+import { AppRoutes } from './routes'
 
-function App() {
+export default function App() {
   return (
-    <>
-      <div>This is The frontend/client part of the application</div>
-      <Home />
-    </>
-  );
+    <ThemeProvider>
+      <ToastProvider>
+        <TooltipProvider delayDuration={400}>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </ToastProvider>
+    </ThemeProvider>
+  )
 }
-
-export default App;
