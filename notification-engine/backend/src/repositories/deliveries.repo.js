@@ -47,6 +47,8 @@ const CAMEL_TO_SNAKE = {
   graph_message_id: 'graph_message_id',
   sentAt: 'sent_at',
   sent_at: 'sent_at',
+  lastAttemptedAt: 'last_attempted_at',
+  last_attempted_at: 'last_attempted_at',
 };
 
 export async function update(id, fields) {
@@ -95,12 +97,21 @@ export async function markFailed(id, lastError) {
 export async function markRetrying(id) {
   const { rows } = await pool.query(
     `UPDATE notification_deliveries
-     SET attempts = attempts + 1, status = 'retrying'
+     SET attempts = attempts + 1, status = 'retrying', last_attempted_at = now()
      WHERE id = $1
      RETURNING *`,
     [id]
   );
   return rows[0] ?? null;
+}
+
+export async function expireMaxAttempts(maxAttempts) {
+  await pool.query(
+    `UPDATE notification_deliveries
+     SET status = 'failed', last_error = 'max_attempts_exceeded'
+     WHERE status = 'retrying' AND attempts >= $1`,
+    [maxAttempts]
+  );
 }
 
 export async function resetForRetry(id) {

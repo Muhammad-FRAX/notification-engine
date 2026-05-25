@@ -9,7 +9,7 @@ import { getProxyAccount } from '../repositories/proxyAccount.repo.js';
  * Returns true for errors that warrant an automatic retry:
  *   HTTP 429 (throttled), 5xx (server error), or transient network faults.
  */
-function isRetryable(err) {
+export function isRetryable(err) {
   const code = err.statusCode ?? err.status ?? err.response?.status;
   if (code === 429 || (code >= 500 && code < 600)) return true;
   return ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND'].includes(err.code);
@@ -19,7 +19,7 @@ function isRetryable(err) {
  * Attempts to send to one recipient and updates the delivery row accordingly.
  * Never throws — errors are captured into the delivery row (failed or retrying).
  */
-async function sendToRecipient(delivery, recipient, rendered, proxyAccount) {
+export async function sendToRecipient(delivery, recipient, rendered, proxyAccount) {
   const { htmlBody, attachments, hostedContents } = rendered;
   const opts = { attachments, hostedContents };
 

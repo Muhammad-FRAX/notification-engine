@@ -278,6 +278,7 @@ notification_deliveries
   status          text not null         -- 'queued','sent','failed','retrying'
   attempts        int  not null default 0
   last_error      text
+  last_attempted_at timestamptz         -- set by markRetrying; used by retry worker for backoff scheduling
   graph_chat_id   text                  -- for user sends
   graph_message_id text
   sent_at         timestamptz
