@@ -9,6 +9,7 @@ import config from './config.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import healthRouter from './routes/health.routes.js';
+import { initProxyAccount } from './integrations/msal.service.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -66,8 +67,9 @@ if (config.nodeEnv === 'production') {
 // Centralised error handler — must be last
 app.use(errorHandler);
 
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
   console.log(`[server] Notification Engine listening on port ${config.port} (${config.nodeEnv})`);
+  await initProxyAccount();
 });
 
 export default app;
