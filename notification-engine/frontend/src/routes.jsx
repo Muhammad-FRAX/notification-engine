@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { Spinner } from './components/ui/spinner'
 
@@ -16,6 +16,7 @@ const TemplateEditor   = lazy(() => import('./pages/Templates/Editor'))
 const Rules            = lazy(() => import('./pages/Rules'))
 const Settings         = lazy(() => import('./pages/Settings'))
 const Demo             = lazy(() => import('./pages/Demo'))
+const Login            = lazy(() => import('./pages/Login'))
 
 function PageLoader() {
   return (
@@ -25,27 +26,49 @@ function PageLoader() {
   )
 }
 
+function RequireAuth({ children }) {
+  const location = useLocation()
+  const token = localStorage.getItem('admin_token')
+  if (!token) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+  return children
+}
+
 export function AppRoutes() {
   return (
-    <AppShell>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/"                       element={<Dashboard />} />
-          <Route path="/notifications"          element={<NotificationList />} />
-          <Route path="/notifications/:id"      element={<NotificationDetail />} />
-          <Route path="/sources"                element={<Sources />} />
-          <Route path="/recipients/users"       element={<UsersPage />} />
-          <Route path="/recipients/channels"    element={<ChannelsPage />} />
-          <Route path="/groups"                 element={<GroupsList />} />
-          <Route path="/groups/:id"             element={<GroupDetail />} />
-          <Route path="/templates"              element={<TemplatesList />} />
-          <Route path="/templates/:id"          element={<TemplateEditor />} />
-          <Route path="/rules"                  element={<Rules />} />
-          <Route path="/settings"               element={<Settings />} />
-          <Route path="/demo"                   element={<Demo />} />
-          <Route path="*"                       element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </AppShell>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="*"
+          element={
+            <RequireAuth>
+              <AppShell>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/"                       element={<Dashboard />} />
+                    <Route path="/notifications"          element={<NotificationList />} />
+                    <Route path="/notifications/:id"      element={<NotificationDetail />} />
+                    <Route path="/sources"                element={<Sources />} />
+                    <Route path="/recipients/users"       element={<UsersPage />} />
+                    <Route path="/recipients/channels"    element={<ChannelsPage />} />
+                    <Route path="/groups"                 element={<GroupsList />} />
+                    <Route path="/groups/:id"             element={<GroupDetail />} />
+                    <Route path="/templates"              element={<TemplatesList />} />
+                    <Route path="/templates/:id"          element={<TemplateEditor />} />
+                    <Route path="/rules"                  element={<Rules />} />
+                    <Route path="/settings"               element={<Settings />} />
+                    <Route path="/demo"                   element={<Demo />} />
+                    <Route path="*"                       element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Suspense>
+              </AppShell>
+            </RequireAuth>
+          }
+        />
+      </Routes>
+    </Suspense>
   )
 }

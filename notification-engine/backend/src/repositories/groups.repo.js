@@ -41,7 +41,19 @@ export async function removeGroup(id) {
 
 export async function listMembers(groupId) {
   const { rows } = await pool.query(
-    'SELECT * FROM group_members WHERE group_id = $1 ORDER BY created_at ASC',
+    `SELECT
+       gm.id,
+       gm.group_id,
+       gm.member_type,
+       gm.member_id,
+       gm.created_at,
+       CASE WHEN gm.member_type = 'user'    THEN ru.display_name ELSE rc.display_name END AS display_name,
+       CASE WHEN gm.member_type = 'user'    THEN ru.upn          ELSE rc.channel_id  END AS identifier
+     FROM group_members gm
+     LEFT JOIN recipients_users    ru ON gm.member_type = 'user'    AND gm.member_id = ru.id
+     LEFT JOIN recipients_channels rc ON gm.member_type = 'channel' AND gm.member_id = rc.id
+     WHERE gm.group_id = $1
+     ORDER BY gm.created_at ASC`,
     [groupId]
   );
   return rows;

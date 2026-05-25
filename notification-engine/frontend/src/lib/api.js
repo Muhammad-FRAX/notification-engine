@@ -18,6 +18,12 @@ async function request(path, options = {}) {
 
   const res = await fetch(`${BASE}${path}`, { ...options, headers })
 
+  if (res.status === 401 && path !== '/admin/auth/login') {
+    localStorage.removeItem('admin_token')
+    window.location.href = '/login'
+    return
+  }
+
   if (!res.ok) {
     let body
     try { body = await res.json() } catch { body = null }
