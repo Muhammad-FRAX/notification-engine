@@ -9,6 +9,7 @@ import config from './config.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import healthRouter from './routes/health.routes.js';
+import notificationsRouter from './routes/notifications.routes.js';
 import { initProxyAccount } from './integrations/msal.service.js';
 import { start as startRetryWorker } from './services/retry.worker.js';
 
@@ -55,6 +56,7 @@ app.use('/api/admin/auth', authLimiter);
 
 // Routes
 app.use(healthRouter);
+app.use(notificationsRouter);
 
 // Serve compiled frontend in production
 if (config.nodeEnv === 'production') {
