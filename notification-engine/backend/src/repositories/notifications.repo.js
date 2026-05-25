@@ -56,6 +56,27 @@ export async function create({ sourceId, eventType, payload, status = 'queued' }
   return rows[0];
 }
 
+export async function getStats() {
+  const { rows: statusRows } = await pool.query(
+    `SELECT status, COUNT(*)::int AS count FROM notifications GROUP BY status`
+  );
+  const { rows: retryRows } = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM notification_deliveries WHERE status = 'retrying'`
+  );
+
+  const byStatus = {};
+  let total = 0;
+  for (const row of statusRows) {
+    byStatus[row.status] = row.count;
+    total += row.count;
+  }
+
+  return {
+    notifications: { total, by_status: byStatus },
+    deliveries: { retrying: retryRows[0]?.count ?? 0 },
+  };
+}
+
 const CAMEL_TO_SNAKE = {
   status: 'status',
   matchedRules: 'matched_rules',

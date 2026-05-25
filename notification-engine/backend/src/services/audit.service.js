@@ -1,5 +1,44 @@
 import * as notificationsRepo from '../repositories/notifications.repo.js';
 import * as deliveriesRepo from '../repositories/deliveries.repo.js';
+import { HttpError } from '../util/HttpError.js';
+
+export async function listNotificationsForAdmin({ status, sourceId, eventType, from, to, limit = 50, offset = 0 } = {}) {
+  return notificationsRepo.listNotifications({ status, sourceId, eventType, from, to, limit, offset });
+}
+
+export async function getNotificationDetail(id) {
+  const notification = await notificationsRepo.findById(id);
+  if (!notification) return null;
+  const deliveries = await deliveriesRepo.listByNotification(id);
+  return { ...notification, deliveries };
+}
+
+export async function retryNotificationDeliveries(notificationId) {
+  const notification = await notificationsRepo.findById(notificationId);
+  if (!notification) return null;
+  const deliveries = await deliveriesRepo.listByNotification(notificationId);
+  const failed = deliveries.filter((d) => d.status === 'failed');
+  await Promise.all(failed.map((d) => deliveriesRepo.resetForRetry(d.id)));
+  if (failed.length > 0) {
+    await computeAndUpdateNotificationStatus(notificationId);
+  }
+  return { queued: failed.length };
+}
+
+export async function retryOneDelivery(deliveryId) {
+  const delivery = await deliveriesRepo.findById(deliveryId);
+  if (!delivery) return null;
+  if (delivery.status !== 'failed') {
+    throw new HttpError(409, 'not_retryable', 'Only failed deliveries can be retried.');
+  }
+  const reset = await deliveriesRepo.resetForRetry(deliveryId);
+  await computeAndUpdateNotificationStatus(delivery.notification_id);
+  return reset;
+}
+
+export async function getStats() {
+  return notificationsRepo.getStats();
+}
 
 export async function createNotification({ sourceId, eventType, payload }) {
   return notificationsRepo.create({ sourceId, eventType, payload, status: 'queued' });

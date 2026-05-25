@@ -6,6 +6,7 @@ import recipientsRouter from './recipients.routes.js';
 import groupsRouter from './groups.routes.js';
 import templatesRouter from './templates.routes.js';
 import rulesRouter from './rules.routes.js';
+import auditRouter from './audit.routes.js';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/recipients', recipientsRouter);
 router.use('/groups', groupsRouter);
 router.use('/templates', templatesRouter);
 router.use('/rules', rulesRouter);
+router.use('/', auditRouter);
 
 export default router;
