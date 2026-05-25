@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Dark mode tokens (default) */
+:root {
+  --bg:           #0b0b10;
+  --bg-elev:      #131320;
+  --bg-elev-2:    #1a1a2a;
+  --border:       rgba(255, 255, 255, 0.08);
+  --text:         #e7e7ee;
+  --text-muted:   #9a9aa8;
+  --text-subtle:  #6e6e7e;
+
+  --accent:       #a78bfa;
+  --accent-strong:#8b5cf6;
+  --accent-soft:  rgba(167, 139, 250, 0.12);
+
+  --success:      #34d399;
+  --warning:      #fbbf24;
+  --danger:       #f87171;
+
+  /* Alpha variants for status badges and intent states */
+  --success-soft:   rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.20);
+  --warning-soft:   rgba(251, 191, 36, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.20);
+  --danger-soft:    rgba(248, 113, 113, 0.12);
+  --danger-border:  rgba(248, 113, 113, 0.20);
+  --danger-hover:   rgba(248, 113, 113, 0.10);
+  --danger-hover-border: rgba(248, 113, 113, 0.30);
+
+  --radius-sm:    6px;
+  --radius:       8px;
+  --radius-lg:    12px;
+
+  --font-sans:    "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  --btn-h-sm:     26px;
+  --btn-h:        30px;
+  --btn-h-lg:     34px;
+  --btn-padding-x:10px;
+  --input-h:      30px;
+
+  --sidebar-w:    220px;
+  --topbar-h:     48px;
+}
+
+/* Light mode token overrides */
+:root.light {
+  --bg:           #f4f4f8;
+  --bg-elev:      #ffffff;
+  --bg-elev-2:    #f0f0f6;
+  --border:       rgba(0, 0, 0, 0.10);
+  --text:         #111118;
+  --text-muted:   #52525e;
+  --text-subtle:  #8e8e9a;
+
+  --accent:       #7c3aed;
+  --accent-strong:#6d28d9;
+  --accent-soft:  rgba(124, 58, 237, 0.10);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 18px;
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
+}
+
+@layer utilities {
+  .font-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-elev-2) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--bg-elev-2);
+    border-radius: 3px;
+  }
+
+  .focus-ring {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
+  }
+}
