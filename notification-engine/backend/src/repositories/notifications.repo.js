@@ -86,6 +86,10 @@ const CAMEL_TO_SNAKE = {
   error: 'error',
 };
 
+// Columns of jsonb type — values must be JSON.stringify'd before binding,
+// otherwise node-postgres serializes JS arrays as PG array literals ({...}).
+const JSON_COLUMNS = new Set(['matched_rules']);
+
 export async function update(id, fields) {
   const setClauses = [];
   const params = [id];
@@ -94,7 +98,7 @@ export async function update(id, fields) {
     if (value === undefined) continue;
     const col = CAMEL_TO_SNAKE[key];
     if (!col) continue;
-    params.push(value);
+    params.push(JSON_COLUMNS.has(col) ? JSON.stringify(value) : value);
     setClauses.push(`${col} = $${params.length}`);
   }
 

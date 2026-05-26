@@ -17,54 +17,60 @@ export async function getStatus(req, res, next) {
 }
 
 /**
- * SSE endpoint. Opens a persistent HTTP connection and streams two events:
- *   1. `device_code` — { verification_uri, user_code, message } — send to operator
- *   2. `signed_in`   — { upn, display_name, aad_user_id } — sign-in complete
- *   or `error`       — { message } — if the flow fails
+ * Starts the MSAL device-code flow.
+ * Responds with JSON { verification_uri, user_code, message } as soon as MSAL
+ * surfaces the device code (typically <1s). The actual token acquisition
+ * continues in the background — when the operator finishes signing in via the
+ * browser, the proxy_account row is updated to status='signed_in'. The frontend
+ * polls GET /admin/proxy-account to detect completion.
  *
- * The MSAL device-code flow can wait up to 15 minutes for the operator to
- * authenticate; the connection stays open for that duration.
+ * Edge cases:
+ *   - Silent refresh succeeds (cached token still valid): no device code is
+ *     emitted; respond with { already_signed_in: true } once persisted.
+ *   - MSAL fails before emitting a device code: respond 500.
  */
 export async function startSignIn(req, res, next) {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
+  let responded = false;
 
-  function send(event, data) {
-    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  function respond(status, body) {
+    if (responded) return;
+    responded = true;
+    res.status(status).json(body);
   }
 
-  try {
-    await getDelegatedToken((deviceCodeResponse) => {
-      send('device_code', {
-        verification_uri: deviceCodeResponse.verificationUri,
-        user_code: deviceCodeResponse.userCode,
-        message: deviceCodeResponse.message,
-      });
+  const tokenPromise = getDelegatedToken((deviceCodeResponse) => {
+    respond(200, {
+      verification_uri: deviceCodeResponse.verificationUri,
+      user_code: deviceCodeResponse.userCode,
+      message: deviceCodeResponse.message,
     });
+  });
 
-    const account = await getSignedInAccount();
-    if (account) {
-      const parsed = parseMsalAccount(account);
-      await setProxyAccount({
-        ...parsed,
-        cachePath: MSAL_CACHE_PATH,
-        lastSignInAt: new Date(),
-        status: 'signed_in',
-      });
-      send('signed_in', {
-        upn: parsed.upn,
-        display_name: parsed.displayName,
-        aad_user_id: parsed.aadUserId,
-      });
-    }
-
-    res.end();
-  } catch (err) {
-    send('error', { message: err.message });
-    res.end();
-  }
+  tokenPromise
+    .then(async () => {
+      try {
+        const account = await getSignedInAccount();
+        if (account) {
+          const parsed = parseMsalAccount(account);
+          await setProxyAccount({
+            ...parsed,
+            cachePath: MSAL_CACHE_PATH,
+            lastSignInAt: new Date(),
+            status: 'signed_in',
+          });
+          console.log(`[msal] Proxy account signed in: ${parsed.upn}`);
+        }
+        // Silent-refresh path: callback never fired, respond now.
+        respond(200, { already_signed_in: true });
+      } catch (err) {
+        console.error('[msal] Persist signed-in account failed:', err.message);
+        respond(500, { error: 'persist_failed', message: err.message });
+      }
+    })
+    .catch((err) => {
+      console.error('[msal] Device code flow failed:', err.message);
+      respond(500, { error: 'sign_in_failed', message: err.message });
+    });
 }
 
 export async function signOutHandler(req, res, next) {

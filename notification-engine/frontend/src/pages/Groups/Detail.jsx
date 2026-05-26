@@ -149,9 +149,9 @@ export default function GroupDetail() {
                 </SelectTrigger>
                 <SelectContent>
                   {recipientOptions.length === 0 && (
-                    <SelectItem value="" disabled>
+                    <div className="px-2 py-1.5 text-xs text-[var(--text-subtle)]">
                       No {addForm.member_type === 'user' ? 'users' : 'channels'} available
-                    </SelectItem>
+                    </div>
                   )}
                   {recipientOptions.map(r => (
                     <SelectItem key={r.id} value={r.id}>

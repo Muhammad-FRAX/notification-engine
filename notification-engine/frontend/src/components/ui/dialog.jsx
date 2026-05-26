@@ -22,6 +22,9 @@ export function DialogOverlay({ className, ...props }) {
 }
 
 export function DialogContent({ className, children, ...props }) {
+  // Opt out of Radix's a11y description warning when no DialogDescription is provided.
+  // Callers can still set aria-describedby explicitly to override.
+  const ariaProps = 'aria-describedby' in props ? {} : { 'aria-describedby': undefined }
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -35,6 +38,7 @@ export function DialogContent({ className, children, ...props }) {
           'focus:outline-none',
           className
         )}
+        {...ariaProps}
         {...props}
       >
         {children}

@@ -64,7 +64,7 @@ app.use('/api/admin', adminRouter);
 if (config.nodeEnv === 'production') {
   const distPath = join(__dirname, '..', '..', 'frontend', 'dist');
   app.use(express.static(distPath));
-  app.get('*', (req, res) => {
+  app.get('/*splat', (req, res) => {
     res.sendFile(join(distPath, 'index.html'));
   });
 }

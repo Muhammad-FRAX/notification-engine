@@ -32,7 +32,7 @@ export default function Rules() {
   const [templates, setTemplates] = useState([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ source_id: '', event_pattern: '', group_id: '', template_id: '', priority: 100 })
+  const [form, setForm] = useState({ source_id: '', event_pattern: '', group_id: '', template_id: '__default__', priority: 100 })
   const [saving, setSaving] = useState(false)
 
   async function load() {
@@ -56,9 +56,13 @@ export default function Rules() {
   async function create() {
     setSaving(true)
     try {
-      await api.post('/admin/rules', { ...form, priority: Number(form.priority) })
+      await api.post('/admin/rules', {
+        ...form,
+        template_id: form.template_id === '__default__' ? null : form.template_id,
+        priority: Number(form.priority),
+      })
       setOpen(false)
-      setForm({ source_id: '', event_pattern: '', group_id: '', template_id: '', priority: 100 })
+      setForm({ source_id: '', event_pattern: '', group_id: '', template_id: '__default__', priority: 100 })
       await load()
     } catch (e) {
       toast({ title: 'Error', description: e.message, variant: 'error' })
@@ -121,11 +125,11 @@ export default function Rules() {
                 </SelectContent>
               </Select>
             </FieldRow>
-            <FieldRow label="Template" hint="Leave blank to use the default template">
+            <FieldRow label="Template" hint="Default uses the source's fallback template">
               <Select value={form.template_id} onValueChange={v => setForm(f => ({ ...f, template_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Default" /></SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Default</SelectItem>
+                  <SelectItem value="__default__">Default</SelectItem>
                   {templates.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                 </SelectContent>
               </Select>

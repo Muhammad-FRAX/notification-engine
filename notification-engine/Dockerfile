@@ -21,7 +21,8 @@ COPY --from=backend-deps /app/backend/node_modules backend/node_modules
 COPY backend/ backend/
 COPY --from=frontend-builder /build/frontend/dist frontend/dist
 COPY docker-entrypoint.sh backend/docker-entrypoint.sh
-RUN chmod +x backend/docker-entrypoint.sh
+# Strip CRLF if checked out on Windows, then make executable
+RUN sed -i 's/\r$//' backend/docker-entrypoint.sh && chmod +x backend/docker-entrypoint.sh
 WORKDIR /app/backend
 EXPOSE 5000
 ENTRYPOINT ["./docker-entrypoint.sh"]

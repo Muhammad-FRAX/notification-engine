@@ -127,6 +127,21 @@ export function AppShell({ children }) {
             <SidebarLink key={item.to} {...item} />
           ))}
         </nav>
+
+        {/* Footer credit */}
+        <div
+          style={{
+            padding: '12px 16px',
+            borderTop: '1px solid var(--border)',
+            fontSize: 11,
+            color: 'var(--text-subtle)',
+            letterSpacing: '0.02em',
+            flexShrink: 0,
+            userSelect: 'none',
+          }}
+        >
+          By: MS-BI-TEAM
+        </div>
       </aside>
 
       {/* Main area */}

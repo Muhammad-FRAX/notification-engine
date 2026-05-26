@@ -10,12 +10,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export async function runMigrations() {
-  const { run } = await import('node-pg-migrate');
-  await run({
+  const { runner } = await import('node-pg-migrate');
+  await runner({
     databaseUrl: config.databaseUrl,
     migrationsTable: 'pgmigrations',
     direction: 'up',
-    dir: join(__dirname, '../../../migrations'),
+    dir: join(__dirname, '../../migrations'),
     checkOrder: true,
     log: (msg) => console.log('[migrate]', msg),
   });

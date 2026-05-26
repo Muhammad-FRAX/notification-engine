@@ -43,12 +43,12 @@ cp .env.example .env
 
 Edit `.env` and fill in every `CHANGE_ME` value:
 
-| Variable | What to set |
-|---|---|
-| `DB_PASSWORD` | Any strong random password for the Postgres `notif` user |
-| `DATABASE_URL` | Uses the value above: `postgres://notif:<DB_PASSWORD>@db:5432/notif` |
-| `ADMIN_PASSWORD` | The password you will use to log into the admin UI |
-| `JWT_SECRET` | At least 32 random bytes, e.g. `openssl rand -hex 32` |
+| Variable         | What to set                                                          |
+| ---------------- | -------------------------------------------------------------------- |
+| `DB_PASSWORD`    | Any strong random password for the Postgres `notif` user             |
+| `DATABASE_URL`   | Uses the value above: `postgres://notif:<DB_PASSWORD>@db:5432/notif` |
+| `ADMIN_PASSWORD` | The password you will use to log into the admin UI                   |
+| `JWT_SECRET`     | At least 32 random bytes, e.g. `openssl rand -hex 32`                |
 
 `ENTRA_CLIENT_ID` and `ENTRA_TENANT_ID` already have the correct defaults and do not need to change.
 
@@ -83,9 +83,9 @@ The internal port defaults to `5000`. To change it, set `PORT=<number>` in `.env
 
 ### Named volumes
 
-| Volume | Purpose |
-|---|---|
-| `notification-engine-data` | Postgres data — do not delete |
+| Volume                     | Purpose                              |
+| -------------------------- | ------------------------------------ |
+| `notification-engine-data` | Postgres data — do not delete        |
 | `notification-engine-msal` | MSAL token cache — survives restarts |
 
 ### Stopping and upgrading
@@ -200,11 +200,11 @@ Templates define how the notification body is rendered from the incoming payload
 
 ### Template kinds
 
-| Kind | What it renders |
-|---|---|
-| `text_html` | An HTML message body sent as the chat message content |
-| `adaptive_card` | An Adaptive Card attachment (JSON) |
-| `image` | Used to attach an inline image via `hostedContents` |
+| Kind            | What it renders                                       |
+| --------------- | ----------------------------------------------------- |
+| `text_html`     | An HTML message body sent as the chat message content |
+| `adaptive_card` | An Adaptive Card attachment (JSON)                    |
+| `image`         | Used to attach an inline image via `hostedContents`   |
 
 ### Variable substitution
 
@@ -212,13 +212,13 @@ Use `{{var}}` placeholders in the template body. The substitution is a minimal m
 
 Available variables come from the inbound notification payload:
 
-| Variable | Source |
-|---|---|
-| `{{title}}` | `payload.title` |
-| `{{body}}` | `payload.body` |
-| `{{severity}}` | `payload.severity` |
-| `{{event_type}}` | `payload.event_type` |
-| `{{data.*}}` | Any field inside `payload.data` |
+| Variable         | Source                          |
+| ---------------- | ------------------------------- |
+| `{{title}}`      | `payload.title`                 |
+| `{{body}}`       | `payload.body`                  |
+| `{{severity}}`   | `payload.severity`              |
+| `{{event_type}}` | `payload.event_type`            |
+| `{{data.*}}`     | Any field inside `payload.data` |
 
 ### Creating a text_html template
 
@@ -337,22 +337,22 @@ Every inbound request and every per-recipient send attempt is recorded. The audi
 
 ### Notification statuses
 
-| Status | Meaning |
-|---|---|
-| `queued` | Received; dispatch has not started yet |
-| `sending` | Dispatch is in progress |
-| `sent` | All recipients received the message successfully |
-| `partial` | Some recipients succeeded, some failed |
-| `failed` | Every delivery attempt failed |
-| `unrouted` | No routing rule matched; nothing was sent |
+| Status     | Meaning                                          |
+| ---------- | ------------------------------------------------ |
+| `queued`   | Received; dispatch has not started yet           |
+| `sending`  | Dispatch is in progress                          |
+| `sent`     | All recipients received the message successfully |
+| `partial`  | Some recipients succeeded, some failed           |
+| `failed`   | Every delivery attempt failed                    |
+| `unrouted` | No routing rule matched; nothing was sent        |
 
 ### Delivery statuses
 
-| Status | Meaning |
-|---|---|
-| `queued` | Waiting for the first send attempt |
-| `sent` | Message delivered to this recipient |
-| `failed` | All retry attempts exhausted |
+| Status     | Meaning                                                          |
+| ---------- | ---------------------------------------------------------------- |
+| `queued`   | Waiting for the first send attempt                               |
+| `sent`     | Message delivered to this recipient                              |
+| `failed`   | All retry attempts exhausted                                     |
 | `retrying` | A retryable failure occurred; the retry worker will pick this up |
 
 ### Browsing the log in the UI
@@ -408,7 +408,7 @@ The engine boots with `msal: signed_out` until you complete the device-code flow
 1. Open the admin UI and navigate to **Settings**.
 2. In the **Proxy account** panel, click **Sign in**.
 3. The panel shows a verification URL and a short device code.
-4. On any device, open the verification URL (e.g. `https://microsoft.com/devicelogin`), enter the code, and sign in as the proxy user (`biadmin@sd.zain.com` or whichever account has the delegated permissions).
+4. On any device, open the verification URL (e.g. `https://microsoft.com/devicelogin`), enter the code, and sign in as the proxy user (`proxy@email.com` or whichever account has the delegated permissions).
 5. The admin UI polls the server until the cache is populated and then shows the signed-in account name and UPN.
 
 From this point the engine can send messages. The token is refreshed silently; you do not need to repeat the device-code flow unless the refresh token expires (typically 90 days of inactivity) or you deliberately sign out.
@@ -434,7 +434,7 @@ curl http://localhost:5000/api/health
 
 curl http://localhost:5000/api/admin/proxy-account \
   -H "Authorization: Bearer <admin-jwt>"
-# {"upn":"biadmin@sd.zain.com","display_name":"...","status":"signed_in","last_sign_in_at":"..."}
+# {"upn":"proxy@email.com","display_name":"...","status":"signed_in","last_sign_in_at":"..."}
 ```
 
 ---
@@ -443,21 +443,21 @@ curl http://localhost:5000/api/admin/proxy-account \
 
 All configuration lives in `.env` at the project root (docker-compose) or `backend/.env` (local development without Docker). Never put secrets in code.
 
-| Variable | Default | Required in prod | Notes |
-|---|---|---|---|
-| `NODE_ENV` | `development` | Yes, set to `production` | Enables frontend serving and stricter mode |
-| `PORT` | `5000` | No | Internal app port; docker-compose maps it to the host 1:1 |
-| `DATABASE_URL` | — | Yes | `postgres://notif:<DB_PASSWORD>@db:5432/notif` |
-| `DB_PASSWORD` | — | Yes | Postgres `notif` user password |
-| `ENTRA_CLIENT_ID` | `5935a6c7-...` | No | Entra app registration client ID |
-| `ENTRA_TENANT_ID` | `a7853600-...` | No | Entra tenant ID |
-| `MSAL_CACHE_DIR` | `/data/msal` | No | Directory where `.msal-cache.json` is written |
-| `ADMIN_USERNAME` | `admin` | No | Admin UI login username |
-| `ADMIN_PASSWORD` | `admin123` | **Change this** | Admin UI login password — plaintext in env, constant-time compared |
-| `JWT_SECRET` | auto-generated | Yes | HS256 signing secret for admin JWTs; must be ≥32 random bytes |
-| `DEFAULT_SOURCE_RPM` | `60` | No | Default rate limit for new sources (requests per minute) |
-| `RETRY_MAX_ATTEMPTS` | `5` | No | Max delivery retry attempts before marking a delivery `failed` |
-| `RETRY_BASE_DELAY_MS` | `30000` | No | Base delay for exponential backoff: `base × 2^attempts` |
+| Variable              | Default        | Required in prod         | Notes                                                              |
+| --------------------- | -------------- | ------------------------ | ------------------------------------------------------------------ |
+| `NODE_ENV`            | `development`  | Yes, set to `production` | Enables frontend serving and stricter mode                         |
+| `PORT`                | `5000`         | No                       | Internal app port; docker-compose maps it to the host 1:1          |
+| `DATABASE_URL`        | —              | Yes                      | `postgres://notif:<DB_PASSWORD>@db:5432/notif`                     |
+| `DB_PASSWORD`         | —              | Yes                      | Postgres `notif` user password                                     |
+| `ENTRA_CLIENT_ID`     | `5935a6c7-...` | No                       | Entra app registration client ID                                   |
+| `ENTRA_TENANT_ID`     | `a7853600-...` | No                       | Entra tenant ID                                                    |
+| `MSAL_CACHE_DIR`      | `/data/msal`   | No                       | Directory where `.msal-cache.json` is written                      |
+| `ADMIN_USERNAME`      | `admin`        | No                       | Admin UI login username                                            |
+| `ADMIN_PASSWORD`      | `admin123`     | **Change this**          | Admin UI login password — plaintext in env, constant-time compared |
+| `JWT_SECRET`          | auto-generated | Yes                      | HS256 signing secret for admin JWTs; must be ≥32 random bytes      |
+| `DEFAULT_SOURCE_RPM`  | `60`           | No                       | Default rate limit for new sources (requests per minute)           |
+| `RETRY_MAX_ATTEMPTS`  | `5`            | No                       | Max delivery retry attempts before marking a delivery `failed`     |
+| `RETRY_BASE_DELAY_MS` | `30000`        | No                       | Base delay for exponential backoff: `base × 2^attempts`            |
 
 Generate a strong `JWT_SECRET`:
 

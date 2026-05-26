@@ -1,10 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Skill(office-hours)",
-      "Skill(office-hours:*)",
-      "Bash(findstr /i \"^server.js$\")",
-      "Bash(git fsck *)"
+      "Bash(docker compose *)",
+      "Bash(ls docker-compose.yaml)",
+      "Bash(cd notification-engine *)",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' -X POST http://localhost:5000/api/notifications -H 'X-API-Key: c783542be044af0704e896bf5ae918ead03e4e34a605d01c38516c8d2dc8d6ee' -H 'Content-Type: application/json' -d '{\"event_type\":\"test.hello\",\"title\":\"Hello from notification-engine\",\"body\":\"<p>End-to-end test from Claude</p>\",\"severity\":\"info\"}')",
+      "Bash(xargs grep -l -i \"sidebar\\\\|nav\\\\b\")"
     ]
   }
 }
